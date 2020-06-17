@@ -3,7 +3,7 @@ const fs=require('fs');
 
 const Product =require('../models/product');
 const User=require('../models/user');
-const product = require('../models/product');
+
 
 exports.getProducts = (req, res, next) => {
     const currentPage = req.query.page || 1;
@@ -44,7 +44,7 @@ exports.getProducts = (req, res, next) => {
         error.statusCode = 401;
         throw error;
       }
-      const products = user.cart.items;
+      const products = user.cart;
       res.status(200).json({message: 'Get cart products successfully',  products: products}) ;
       
     })
@@ -61,12 +61,19 @@ exports.getProducts = (req, res, next) => {
      const productId=req.params.productId;
      Product.findById(productId)
      .then(product =>{
-    
-     return user.save(product);
+      //User.cart[productId]=productId;
+     
+      console.log(productId);
+      User.findOneAndUpdate( productId,
+        {$push:{cart:product}},
+        user.cart.push(productId)
+        );
+
+       return user.save();
    
       })
         .then(result =>{
-          res.status(201).json({message:'product will added to cart'});
+          res.status(201).json({message:'product will added to the cart'});
       })
      
      .catch(err => {

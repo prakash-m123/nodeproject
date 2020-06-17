@@ -10,7 +10,7 @@ exports.getProducts = (req, res, next) => {
   const currentPage = req.query.page || 1;
   const perPage = 2;
   let totalItems;
-  console.log(req);
+  //console.log(req);
 
   Product.find()
     .countDocuments()
@@ -76,7 +76,7 @@ exports.createProduct = (req, res, next) => {
         product: product,
         creator: { _id: creator._id, name: creator.name }
       });
-      console.log(req);
+      //console.log(req);
     })
     .catch(err => {
       if (!err.statusCode) {
@@ -96,7 +96,7 @@ exports.getProduct = (req, res, next) => {
         throw error;
       }
       res.status(200).json({ message: 'Product fetched.', product: product });
-      console.log(req);
+      //console.log(req);
     })
     .catch(err => {
       if (!err.statusCode) {
@@ -151,7 +151,7 @@ exports.updateProduct = (req, res, next) => {
     })
     .then(result => {
       res.status(200).json({ message: 'Product updated!', product: result });
-      console.log(req);
+      //console.log(req);
     })
     .catch(err => {
       if (!err.statusCode) {

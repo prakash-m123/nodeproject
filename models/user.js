@@ -14,17 +14,16 @@ const userSchema = new Schema({
     type: String,
     required: true
   },
-cart : {
-   items: [
+ cart: [
     {
-      productId:{
+     productId:{
       type: Schema.Types.ObjectId,
       ref: 'Product',
       required:true
       }
     }
   ]
-}
+
 
 });
 
