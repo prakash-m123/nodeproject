@@ -3,13 +3,15 @@ const fs=require('fs');
 
 const Product =require('../models/product');
 const User=require('../models/user');
+const Cart=require('../models/cart');
+const product = require('../models/product');
 
 
 exports.getProducts = (req, res, next) => {
     const currentPage = req.query.page || 1;
     const perPage = 2;
     let totalItems;
-    console.log(req);
+   
   
     Product.find()
       .countDocuments()
@@ -25,7 +27,7 @@ exports.getProducts = (req, res, next) => {
           products: products,
           totalItems: totalItems
         });
-       // console.log(req);
+       
       })
       .catch(err => {
         if (!err.statusCode) {
@@ -58,22 +60,29 @@ exports.getProducts = (req, res, next) => {
   };
 
   exports.postCart=(req,res,next)=>{
-     const productId=req.params.productId;
+     const productId=req.body.productId;
      Product.findById(productId)
-     .then(product =>{
-      //User.cart[productId]=productId;
+     let creator;
+    
+     const cart = new Cart({
+       product:req.body.product,
+       quantity:req.body.quantity,
+         creator:req.userId
+     });
+     cart.save()
+     .then(result =>{
+       return User.findById(req.userId);
+       
+     })
+     .then(user => {
+      creator =user;
+      user.carts.push(cart);
+      return user.save();
+    })
      
-      console.log(productId);
-      User.findOneAndUpdate( productId,
-        {$push:{cart:product}},
-        user.cart.push(productId)
-        );
-
-       return user.save();
-   
-      })
-        .then(result =>{
-          res.status(201).json({message:'product will added to the cart'});
+    .then(result =>{
+          res.status(201).json({message:'product will added to the cart', cart:cart,
+          creator: { _id: user._id, name: user.firstname }});
       })
      
      .catch(err => {
