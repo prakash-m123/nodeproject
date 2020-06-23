@@ -16,10 +16,12 @@ const userSchema = new Schema({
   },
  carts: [
     {
+      product:{
       type: Schema.Types.ObjectId,
-      ref: 'Product'
-    
+      ref:'Product'
+      }
     }
+  
  ]
 });
 

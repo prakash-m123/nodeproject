@@ -8,8 +8,8 @@ const router=express.Router();
 
 router.get('/products',isAuth,shopController.getProducts);
 
-router.get('/getcart',isAuth,shopController.getCart);
+router.get('/getcart/:userId',isAuth,shopController.getCart);
 
-router.put('/postcart',isAuth,shopController.postCart);
+router.put('/postcart/:userId',isAuth,shopController.postCart);
 
 module.exports = router;
