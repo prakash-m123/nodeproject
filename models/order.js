@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const orderSchema = new Schema({
-  
-      products: {
+  products:[{
+      product: {
          type: Schema.Types.ObjectId,
         ref:'Product',
         required: true 
@@ -12,9 +12,10 @@ const orderSchema = new Schema({
       quantity:{ 
         type:Number,
         default:1
-      },
+      }
+    }],
     
-  user: [{
+  
     email: {
       type: String,
       required: true
@@ -24,7 +25,7 @@ const orderSchema = new Schema({
       required: true,
       ref: 'User'
     }
-  }]
+  
 });
 
 module.exports = mongoose.model('Order', orderSchema);

@@ -37,8 +37,9 @@ exports.getProducts = (req, res, next) => {
       });
   };
   exports.getCart=(req,res,next)=>{
-    const id=req.params.userId;
-    User.findById(id)
+   
+    User.findById(req.params.userId)
+  
     .then(user=>{
   //  const cartId=req.params.cartId;
   //   Cart.findById(cartId)
@@ -49,7 +50,7 @@ exports.getProducts = (req, res, next) => {
       //   throw error;
       // }
       //const products = user.cart;
-      res.status(200).json({message: 'Get cart products successfully', cart:user.cart}) ;
+      res.status(200).json({message: 'Get cart products successfully', cart:user });
       
     })
     .catch(err => {
@@ -63,7 +64,7 @@ exports.getProducts = (req, res, next) => {
 
   exports.postCart=(req,res,next)=>{
    const userId=req.params.userId;
-    Product.findById(userId)
+    User.findById(userId)
       let creator;
      const cart = new Cart({
      product:req.body.productId,
@@ -115,9 +116,10 @@ exports.getProducts = (req, res, next) => {
         });
       })
       .catch(err => {
-        res.status(500).json({
-          error: err
-        });
+        if(!err.statusCode){
+          err.statusCode=500;
+        }
+        next(err);
       });
   };
   
@@ -125,22 +127,26 @@ exports.getProducts = (req, res, next) => {
     Product.findById(req.body.productId)
       .then(product => {
         if (!product) {
-          return res.status(404).json({
-            message: "Product not found"
-          });
+          const error =new Error('product not found');
+          error.statusCode=404;
+          throw error;
         }
         const order = new Order({
           quantity: req.body.quantity,
-          product: req.body.productId
+          product: req.body.productId,
+          email:req.body.email,
+          userId:req.body.userId
         });
-        return order.save();
+         order.save()
+        .then(result=>{
+          User.findById(req.params.userId)
+        })
       })
       .then(result => {
         console.log(result);
         res.status(201).json({
           message: "Order stored",
           createdOrder: {
-            _id: result._id,
             product: result.product,
             quantity: result.quantity
           }
@@ -161,9 +167,9 @@ exports.getProducts = (req, res, next) => {
       .exec()
       .then(order => {
         if (!order) {
-          return res.status(404).json({
-            message: "Order not found"
-          });
+         const error =new Error('order not found');
+         error.statusCode=404;
+         throw error;
         }
         res.status(200).json({
           order: order

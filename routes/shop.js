@@ -12,4 +12,8 @@ router.get('/getcart/:userId',isAuth,shopController.getCart);
 
 router.put('/postcart/:userId',isAuth,shopController.postCart);
 
+router.get('/getorder',isAuth,shopController.getOrders);
+
+router.post('/postorder/:userId',isAuth,shopController.postOrder);
+
 module.exports = router;
