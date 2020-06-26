@@ -3,28 +3,31 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const orderSchema = new Schema({
-  products:[{
+  products:[
+    {
       product: {
-         type: Schema.Types.ObjectId,
-        ref:'Product',
-        required: true 
+         type:Schema.Types.ObjectId,
+         required:true,
+        ref:'Product'        
       },
       quantity:{ 
         type:Number,
         default:1
       }
-    }],
-    
+    }
+  ],
   
+  user:{
     email: {
       type: String,
       required: true
     },
     userId: {
       type: Schema.Types.ObjectId,
-      required: true,
+    
       ref: 'User'
     }
+  }
   
 });
 

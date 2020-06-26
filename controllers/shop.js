@@ -4,15 +4,13 @@ const fs=require('fs');
 const Product =require('../models/product');
 const User=require('../models/user');
 const Cart=require('../models/cart');
-
+const Order=require('../models/order');
 
 
 exports.getProducts = (req, res, next) => {
     const currentPage = req.query.page || 1;
     const perPage = 2;
     let totalItems;
-   
-  
     Product.find()
       .countDocuments()
       .then(count => {
@@ -41,6 +39,11 @@ exports.getProducts = (req, res, next) => {
     User.findById(req.params.userId)
   
     .then(user=>{
+      if(!user){
+        const error=new Error('could not find user');
+        error.statusCode=404;
+        throw error;
+      }
   //  const cartId=req.params.cartId;
   //   Cart.findById(cartId)
   //   .then(cart => {
@@ -50,7 +53,7 @@ exports.getProducts = (req, res, next) => {
       //   throw error;
       // }
       //const products = user.cart;
-      res.status(200).json({message: 'Get cart products successfully', cart:user });
+      res.status(200).json({message: 'Get cart products successfully', cart:user.carts });
       
     })
     .catch(err => {
@@ -85,7 +88,9 @@ exports.getProducts = (req, res, next) => {
      
     .then(result =>{
           res.status(201).json({message:'product will added to the cart', cart:cart,
-          creator: { _id: req.params.userId ,name:result.name,email:result.email}});
+          creator: { _id: req.params.userId ,
+            name:result.name,
+            email:result.email }});
       })
      
      .catch(err => {
@@ -97,74 +102,43 @@ exports.getProducts = (req, res, next) => {
 
   };
 
-  exports.getOrders=(req, res, next) => {
-    Order.find()
-      .select("product quantity _id")
-      .populate('product', 'name')
-      .exec()
-      .then(docs => {
-        res.status(200).json({
-          count: docs.length,
-          orders: docs.map(doc => {
-            return {
-              _id: doc._id,
-              product: doc.product,
-              quantity: doc.quantity
-            
-            };
-          })
-        });
-      })
-      .catch(err => {
-        if(!err.statusCode){
-          err.statusCode=500;
-        }
-        next(err);
-      });
-  };
+ 
   
   exports.postOrder=(req, res, next) => {
-    Product.findById(req.body.productId)
-      .then(product => {
-        if (!product) {
-          const error =new Error('product not found');
-          error.statusCode=404;
-          throw error;
-        }
+    const userId=req.params.userId;
+    User.findById(userId)
+    .populate('user.carts.product')
+      .then(user => {
+        
+        // const products = user.carts.map(i => {
+        //   return { quantity: i.quantity, product:{...i.product  }};
+          
+        // });
         const order = new Order({
-          quantity: req.body.quantity,
-          product: req.body.productId,
-          email:req.body.email,
-          userId:req.body.userId
+          user: {
+            email: req.body.email,
+            userId: req.body.userId
+          },
+          
+          products:req.body.productId
+          
         });
-         order.save()
-        .then(result=>{
-          User.findById(req.params.userId)
-        })
+        return order.save();
       })
       .then(result => {
-        console.log(result);
-        res.status(201).json({
-          message: "Order stored",
-          createdOrder: {
-            product: result.product,
-            quantity: result.quantity
-          }
-         
-        });
+        res.status(201).json({message: 'Order stored'  });
       })
       .catch(err => {
-        console.log(err);
-        res.status(500).json({
-          error: err
-        });
+       if(!err){
+         err.statusCode=500;
+       }
+       next(err);
       });
   };
 
   exports.getOrder=(req, res, next) => {
     Order.findById(req.params.orderId)
       .populate('product')
-      .exec()
       .then(order => {
         if (!order) {
          const error =new Error('order not found');
@@ -177,8 +151,9 @@ exports.getProducts = (req, res, next) => {
         });
       })
       .catch(err => {
-        res.status(500).json({
-          error: err
-        });
+        if(!err.statusCode){
+          err.statusCode=500;
+        }
+        next(err);
       });
   };
