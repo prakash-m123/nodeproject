@@ -35,9 +35,8 @@ exports.getProducts = (req, res, next) => {
       });
   };
   exports.getCart=(req,res,next)=>{
-   
-    User.findById(req.params.userId)
-  
+   const userId=req.params.userId;
+    User.findById(userId)
     .then(user=>{
       if(!user){
         const error=new Error('could not find user');
@@ -88,9 +87,11 @@ exports.getProducts = (req, res, next) => {
      
     .then(result =>{
           res.status(201).json({message:'product will added to the cart', cart:cart,
-          creator: { _id: req.params.userId ,
+          creator: {
+           _id: req.params.userId ,
             name:result.name,
-            email:result.email }});
+            email:result.email 
+          }});
       })
      
      .catch(err => {
@@ -101,26 +102,24 @@ exports.getProducts = (req, res, next) => {
     });
 
   };
-
- 
   
   exports.postOrder=(req, res, next) => {
     const userId=req.params.userId;
     User.findById(userId)
-    .populate('user.carts.product')
-      .then(user => {
-        
-        // const products = user.carts.map(i => {
-        //   return { quantity: i.quantity, product:{...i.product  }};
+    .populate('carts.productId')
+          .then(user => {
+        const products = user.carts.map(i => {
+          return { quantity: i.quantity, product:{ ...i.productId._id } };
           
-        // });
+        });
+        console.log(products);  
         const order = new Order({
           user: {
             email: req.body.email,
             userId: req.body.userId
           },
           
-          products:req.body.productId
+          products:products
           
         });
         return order.save();

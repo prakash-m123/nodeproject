@@ -16,7 +16,7 @@ const userSchema = new Schema({
   },
  carts: [
     {
-      product:{
+      productId:{
       type: Schema.Types.ObjectId,
       ref:'Product'
       },
@@ -25,9 +25,9 @@ const userSchema = new Schema({
         default:1
       }
     }
-  
  ]
 });
+
 
 
 module.exports = mongoose.model('User', userSchema);
